@@ -103,10 +103,38 @@ if len(st.session_state.messages) == 1:
             preset_prompt = "My mind is completely racing right now. Can you help me ground myself?"
             
     # If a button is clicked, inject it into the script flow
+    # --- FIXED SUGGESTION CHIP TRIGGER ---
     if preset_prompt:
+        # 1. Append the user's selected prompt to history
         st.session_state.messages.append({"role": "user", "content": preset_prompt})
-        st.rerun()
+        
+        # 2. Immediately trigger the API call right here without waiting for chat_input
+        with st.chat_message("assistant"):
+            response_placeholder = st.empty()
+            try:
+                # Use your optimized payload logic
+                system_instruction = [st.session_state.messages[0]]
+                recent_history = st.session_state.messages[1:][-6:]
+                optimized_payload = system_instruction + recent_history
 
+                response = client.chat.completions.create(
+                    model=MODEL_NAME,
+                    messages=optimized_payload,
+                )
+                bot_reply = response.choices[0].message.content
+                response_placeholder.markdown(bot_reply)
+                
+                # Silent Token Tracking
+                usage_data = response.usage
+                tokens_processed = usage_data.total_tokens if usage_data else 100
+                st.session_state.total_tokens_spent += tokens_processed
+                
+                # Save the reply to memory
+                st.session_state.messages.append({"role": "assistant", "content": bot_reply})
+                st.rerun()
+                
+            except Exception as e:
+                response_placeholder.error(f"Unable to connect to service layer: {e}")
 # 5. Handle Text Box Input
 if user_prompt := st.chat_input("Share what's on your mind..."):
     
