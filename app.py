@@ -50,7 +50,7 @@ with st.sidebar:
     st.checkbox("Exhale slowly...")
     
     st.divider()
-    st.caption("Note: This is an application is an AI companion, not a replacement for professional help.")
+    st.caption("Note: This application is an AI companion, not a replacement for professional help.")
 
 # ==========================================
 # MAIN WEB INTERFACE
